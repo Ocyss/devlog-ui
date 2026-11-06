@@ -22,6 +22,10 @@ export const DARK_COLORS = {
   levelInfo: '#3794ff',
   levelWarn: '#cca700',
   levelError: '#f14c4c',
+  diffAdded: '#50c878',
+  textOnAccent: '#ffffff',
+  shadow: 'rgba(0, 0, 0, 0.1)',
+  shadowFloating: 'rgba(0, 0, 0, 0.3)',
 
   // Accents
   border: '#3c3c3c',
@@ -50,6 +54,10 @@ export const COLORS = {
   levelInfo: '#005fb8',
   levelWarn: '#b76e00',
   levelError: '#d13438',
+  diffAdded: '#22863a',
+  textOnAccent: '#ffffff',
+  shadow: 'rgba(0, 0, 0, 0.1)',
+  shadowFloating: 'rgba(0, 0, 0, 0.3)',
 
   // Accents
   border: '#dcdcdc',
@@ -61,22 +69,36 @@ export const COLORS = {
   buttonHover: '#1177bb',
 } as const
 
+const colorVariables = (colors: Record<keyof typeof COLORS, string>) =>
+  Object.entries(colors)
+    .map(([key, value]) => `--${key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}: ${value};`)
+    .join('\n    ')
+
 export const STYLES = `
   :host {
-    --bg-primary: ${COLORS.bgPrimary};
-    --bg-secondary: ${COLORS.bgSecondary};
-    --bg-hover: ${COLORS.bgHover};
-    --bg-header: ${COLORS.bgHeader};
-    --text-primary: ${COLORS.textPrimary};
-    --text-secondary: ${COLORS.textSecondary};
-    --text-muted: ${COLORS.textMuted};
-    --border: ${COLORS.border};
+    ${colorVariables(COLORS)}
 
     all: initial;
     font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
     font-size: 12px;
     line-height: 1.4;
     color: var(--text-primary);
+  }
+
+  /* Follow the system unless the page explicitly selects a light theme. */
+  @media (prefers-color-scheme: dark) {
+    :host {
+      ${colorVariables(DARK_COLORS)}
+    }
+
+    :host-context(html[data-darkreader-scheme='light']:not([dark])) {
+      ${colorVariables(COLORS)}
+    }
+  }
+
+  :host-context(html[data-darkreader-scheme='dark']),
+  :host-context(html[dark]) {
+    ${colorVariables(DARK_COLORS)}
   }
 
   * {
@@ -90,7 +112,7 @@ export const STYLES = `
     background: var(--bg-primary);
     display: flex;
     flex-direction: column;
-    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+    box-shadow: -2px 0 8px var(--shadow);
   }
 
   /* Header */
@@ -114,8 +136,8 @@ export const STYLES = `
   }
 
   .devlogger-badge {
-    background: ${COLORS.levelInfo};
-    color: white;
+    background: var(--level-info);
+    color: var(--text-on-accent);
     padding: 2px 6px;
     border-radius: 10px;
     font-size: 10px;
@@ -149,13 +171,13 @@ export const STYLES = `
   }
 
   .devlogger-btn-primary {
-    background: ${COLORS.buttonBg};
-    color: white;
+    background: var(--button-bg);
+    color: var(--text-on-accent);
   }
 
   .devlogger-btn-primary:hover {
-    background: ${COLORS.buttonHover};
-    color: white;
+    background: var(--button-hover);
+    color: var(--text-on-accent);
   }
 
   /* Log List */
@@ -174,12 +196,12 @@ export const STYLES = `
   }
 
   .devlogger-logs::-webkit-scrollbar-thumb {
-    background: ${COLORS.scrollbar};
+    background: var(--scrollbar);
     border-radius: 4px;
   }
 
   .devlogger-logs::-webkit-scrollbar-thumb:hover {
-    background: ${COLORS.scrollbarHover};
+    background: var(--scrollbar-hover);
   }
 
   .devlogger-empty {
@@ -220,23 +242,23 @@ export const STYLES = `
   }
 
   .log-level-debug {
-    background: rgba(110, 110, 110, 0.2);
-    color: ${COLORS.levelDebug};
+    background: color-mix(in srgb, var(--level-debug) 20%, transparent);
+    color: var(--level-debug);
   }
 
   .log-level-info {
-    background: rgba(55, 148, 255, 0.15);
-    color: ${COLORS.levelInfo};
+    background: color-mix(in srgb, var(--level-info) 15%, transparent);
+    color: var(--level-info);
   }
 
   .log-level-warn {
-    background: rgba(204, 167, 0, 0.15);
-    color: ${COLORS.levelWarn};
+    background: color-mix(in srgb, var(--level-warn) 15%, transparent);
+    color: var(--level-warn);
   }
 
   .log-level-error {
-    background: rgba(241, 76, 76, 0.15);
-    color: ${COLORS.levelError};
+    background: color-mix(in srgb, var(--level-error) 15%, transparent);
+    color: var(--level-error);
   }
 
   .log-time {
@@ -255,13 +277,13 @@ export const STYLES = `
   }
 
   .log-source:hover {
-    color: ${COLORS.levelInfo};
+    color: var(--level-info);
   }
 
   .log-context {
     font-size: 10px;
-    color: ${COLORS.levelInfo};
-    background: rgba(55, 148, 255, 0.1);
+    color: var(--level-info);
+    background: color-mix(in srgb, var(--level-info) 10%, transparent);
     padding: 2px 6px;
     border-radius: 3px;
     overflow: hidden;
@@ -270,7 +292,7 @@ export const STYLES = `
   }
 
   .log-entry-in-span {
-    border-left: 2px solid ${COLORS.levelInfo};
+    border-left: 2px solid var(--level-info);
     padding-left: 10px;
   }
 
@@ -325,18 +347,18 @@ export const STYLES = `
   }
 
   .span-status-running {
-    color: ${COLORS.levelInfo};
-    background: rgba(55, 148, 255, 0.15);
+    color: var(--level-info);
+    background: color-mix(in srgb, var(--level-info) 15%, transparent);
   }
 
   .span-status-success {
-    color: ${COLORS.levelInfo};
-    background: rgba(55, 148, 255, 0.15);
+    color: var(--level-info);
+    background: color-mix(in srgb, var(--level-info) 15%, transparent);
   }
 
   .span-status-error {
-    color: ${COLORS.levelError};
-    background: rgba(241, 76, 76, 0.15);
+    color: var(--level-error);
+    background: color-mix(in srgb, var(--level-error) 15%, transparent);
   }
 
   .span-duration {
@@ -419,11 +441,11 @@ export const STYLES = `
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background: ${COLORS.buttonBg};
-    color: white;
+    background: var(--button-bg);
+    color: var(--text-on-accent);
     border: none;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 8px var(--shadow-floating);
     font-size: 20px;
     display: flex;
     align-items: center;
@@ -433,7 +455,7 @@ export const STYLES = `
   }
 
   .devlogger-toggle:hover {
-    background: ${COLORS.buttonHover};
+    background: var(--button-hover);
     transform: scale(1.05);
   }
 
@@ -505,8 +527,8 @@ export const STYLES = `
   }
 
   .filter-bar.filter-active {
-    background: rgba(55, 148, 255, 0.08);
-    border-bottom-color: ${COLORS.levelInfo};
+    background: color-mix(in srgb, var(--level-info) 8%, transparent);
+    border-bottom-color: var(--level-info);
   }
 
   .filter-row {
@@ -539,27 +561,27 @@ export const STYLES = `
   }
 
   .filter-level-btn.active {
-    color: white;
+    color: var(--text-on-accent);
   }
 
   .filter-level-btn.active[data-level="debug"] {
-    background: ${COLORS.levelDebug};
-    border-color: ${COLORS.levelDebug};
+    background: var(--level-debug);
+    border-color: var(--level-debug);
   }
 
   .filter-level-btn.active[data-level="info"] {
-    background: ${COLORS.levelInfo};
-    border-color: ${COLORS.levelInfo};
+    background: var(--level-info);
+    border-color: var(--level-info);
   }
 
   .filter-level-btn.active[data-level="warn"] {
-    background: ${COLORS.levelWarn};
-    border-color: ${COLORS.levelWarn};
+    background: var(--level-warn);
+    border-color: var(--level-warn);
   }
 
   .filter-level-btn.active[data-level="error"] {
-    background: ${COLORS.levelError};
-    border-color: ${COLORS.levelError};
+    background: var(--level-error);
+    border-color: var(--level-error);
   }
 
   .filter-search {
@@ -588,7 +610,7 @@ export const STYLES = `
   }
 
   .filter-input:focus {
-    border-color: ${COLORS.levelInfo};
+    border-color: var(--level-info);
   }
 
   .filter-clear-btn {
@@ -596,22 +618,22 @@ export const STYLES = `
     height: 24px;
     border: none;
     border-radius: 4px;
-    background: rgba(241, 76, 76, 0.2);
-    color: ${COLORS.levelError};
+    background: color-mix(in srgb, var(--level-error) 20%, transparent);
+    color: var(--level-error);
     cursor: pointer;
     font-size: 12px;
     transition: all 0.15s ease;
   }
 
   .filter-clear-btn:hover {
-    background: ${COLORS.levelError};
-    color: white;
+    background: var(--level-error);
+    color: var(--text-on-accent);
   }
 
   .filter-status {
     margin-top: 6px;
     font-size: 10px;
-    color: ${COLORS.levelInfo};
+    color: var(--level-info);
   }
 
   /* No results state */
@@ -655,18 +677,18 @@ export const STYLES = `
   }
 
   .diff-count.diff-added {
-    background: rgba(80, 200, 120, 0.2);
-    color: #50c878;
+    background: color-mix(in srgb, var(--diff-added) 20%, transparent);
+    color: var(--diff-added);
   }
 
   .diff-count.diff-removed {
-    background: rgba(241, 76, 76, 0.2);
-    color: ${COLORS.levelError};
+    background: color-mix(in srgb, var(--level-error) 20%, transparent);
+    color: var(--level-error);
   }
 
   .diff-count.diff-changed {
-    background: rgba(204, 167, 0, 0.2);
-    color: ${COLORS.levelWarn};
+    background: color-mix(in srgb, var(--level-warn) 20%, transparent);
+    color: var(--level-warn);
   }
 
   .diff-count.diff-unchanged {
@@ -688,18 +710,18 @@ export const STYLES = `
   }
 
   .diff-entry.diff-added {
-    background: rgba(80, 200, 120, 0.1);
-    color: #50c878;
+    background: color-mix(in srgb, var(--diff-added) 10%, transparent);
+    color: var(--diff-added);
   }
 
   .diff-entry.diff-removed {
-    background: rgba(241, 76, 76, 0.1);
-    color: ${COLORS.levelError};
+    background: color-mix(in srgb, var(--level-error) 10%, transparent);
+    color: var(--level-error);
   }
 
   .diff-entry.diff-changed {
-    background: rgba(204, 167, 0, 0.1);
-    color: ${COLORS.levelWarn};
+    background: color-mix(in srgb, var(--level-warn) 10%, transparent);
+    color: var(--level-warn);
   }
 
   .diff-icon {
@@ -718,6 +740,6 @@ export const STYLES = `
   }
 
   .log-data-diff .log-data-toggle {
-    color: ${COLORS.levelInfo};
+    color: var(--level-info);
   }
 `
