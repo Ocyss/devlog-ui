@@ -58,6 +58,13 @@ class LoggerChannel {
    * Connect to the broadcast channel
    */
   private connect(): void {
+    // WXT imports entrypoints in an SSR runner with a simulated window.
+    // Node's BroadcastChannel would keep the build process alive.
+    const env = (import.meta as ImportMeta & { env?: { SSR?: boolean } }).env;
+    if (env?.SSR || typeof window === 'undefined') {
+      return;
+    }
+
     try {
       if (typeof BroadcastChannel === 'undefined') {
         console.warn('[DevLogger] BroadcastChannel not supported');
